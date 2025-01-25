@@ -60,20 +60,34 @@ class ModelTrainer:
             # Perform Grid Search to find the best hyper parameters for Optimization
 
             # Create a dictionary of hyper parameters
-            param_grid = {
-                'penalty': ['l1', 'l2', 'elasticnet'],
-                'C': [0.001, 0.01, 0.1, 1, 10],
-                'solver': ['lbfgs', 'liblinear', 'saga']
-            }
+            # Create compatible parameter grid
+            param_grid = [
+                {
+                    'penalty': ['l2'],  # Use l2 explicitly
+                    'solver': ['lbfgs'],
+                    'C': [0.001, 0.01, 0.1, 1, 10],
+                    'class_weight': [None, 'balanced']
+                },
+                {
+                    'penalty': ['l1', 'l2'],
+                    'solver': ['liblinear'],
+                    'C': [0.001, 0.01, 0.1, 1, 10],
+                    'class_weight': [None, 'balanced']
+                }
+            ]
 
             # Create a GridSearchCV Model
             grid_search = GridSearchCV(
                 estimator=LogisticRegression(max_iter=1000),
                 param_grid=param_grid,
-                scoring='accuracy',
+                scoring=['accuracy', 'f1', 'roc_auc'],
+                refit='f1',
                 cv=5,
+                n_jobs=-1,
+                verbose=2,
                 error_score='raise'
             )
+
             # Train GridSearchCV Model
             grid_search.fit(X_train, y_train)
 
