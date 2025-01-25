@@ -1,8 +1,8 @@
 import os
 import sys
 
-from exception.exception import CustomException
-from utils.utils import load_object
+from census_income.exception.exception import CustomException
+from census_income.utils.utils import load_object
 
 import pandas as pd
 

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from exception.exception import CustomException
+from census_income.exception.exception import CustomException
 
 # Intitialize the Data Ingetion Configuration
 @dataclass

@@ -8,8 +8,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 
-from exception.exception import CustomException
-from utils.utils import save_object, evaluate_model
+from census_income.exception.exception import CustomException
+from census_income.utils.utils import save_object, evaluate_model
 
 
 
@@ -78,7 +78,7 @@ class ModelTrainer:
             # Get Performance Report 
             model_report:dict=evaluate_model(X_train,X_test,y_train,y_test,grid_search)
 
-            print(f'After applying GridSearchCV R2 Score : {model_report[0]}, ROC AUC Score : {model_report[1]}')
+            print(f'After applying GridSearchCV R2 Score : {model_report['r2 Score']}, ROC AUC Score : {model_report['roc_auc Score']}')
             print(f'Best Parameters for Logistic Regression are : {best_model_parameters}')
 
             print('\n====================================================================================\n')

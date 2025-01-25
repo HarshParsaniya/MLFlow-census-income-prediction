@@ -11,9 +11,9 @@ from sklearn.preprocessing import StandardScaler, OrdinalEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 
-from exception.exception import CustomException
+from census_income.exception.exception import CustomException
 
-from utils.utils import save_object
+from census_income.utils.utils import save_object
 
 
 
