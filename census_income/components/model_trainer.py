@@ -67,8 +67,13 @@ class ModelTrainer:
             }
 
             # Create a GridSearchCV Model
-            grid_search = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv=5, scoring='roc_auc')
-
+            grid_search = GridSearchCV(
+                estimator=LogisticRegression(max_iter=1000),
+                param_grid=param_grid,
+                scoring='accuracy',
+                cv=5,
+                error_score='raise'
+            )
             # Train GridSearchCV Model
             grid_search.fit(X_train, y_train)
 
@@ -76,9 +81,9 @@ class ModelTrainer:
             best_model_parameters = grid_search.best_params_
 
             # Get Performance Report 
-            model_report:dict=evaluate_model(X_train,X_test,y_train,y_test,grid_search)
+            best_model_report:dict=evaluate_model(X_train,X_test,y_train,y_test,grid_search)
 
-            print(f'After applying GridSearchCV R2 Score : {model_report['r2 Score']}, ROC AUC Score : {model_report['roc_auc Score']}')
+            print(f'After applying GridSearchCV Accuracy Score : {best_model_report['accuracy Score']}, ROC AUC Score : {best_model_report['roc_auc Score']}')
             print(f'Best Parameters for Logistic Regression are : {best_model_parameters}')
 
             print('\n====================================================================================\n')

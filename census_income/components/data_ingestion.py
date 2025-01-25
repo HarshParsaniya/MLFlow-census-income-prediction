@@ -57,7 +57,7 @@ class DataIngestion:
                 df['Native Country'] = df['Native Country'].str.strip().replace('?', np.nan)
 
             if 'Income' in df.columns:
-                df['Income'] = df['Income'].str.strip().replace({'<=50K': 0, '>50K': 1})
+                df['Income'] = df['Income'].str.strip().replace({'<=50K': 0, '>50K': 1}).astype(int)
             
             # Create Train and Test dataset using train-test-split method
             train_dataset, test_dataset = train_test_split(df, test_size=0.3, random_state=42)

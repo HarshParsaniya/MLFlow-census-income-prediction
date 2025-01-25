@@ -5,7 +5,7 @@ import pickle
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import r2_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 from census_income.exception.exception import CustomException
 
@@ -37,11 +37,11 @@ def evaluate_model(X_train, X_test, y_train, y_test, model):
         # Predict Testing data
         y_test_pred =model.predict(X_test)
 
-        # Get R2 scores for train and test data
-        test_model_r2_score = r2_score(y_test,y_test_pred)
+        # Get accuracy Score for train and test data
+        test_model_accuracy_score = accuracy_score(y_test,y_test_pred)
 
-        # Store the r2 score in report
-        report['r2 Score'] = test_model_r2_score
+        # Store the accuracy Score in report
+        report['accuracy Score'] = test_model_accuracy_score
 
         # Get probabilities 
         y_prob = model.predict_proba(X_test)
