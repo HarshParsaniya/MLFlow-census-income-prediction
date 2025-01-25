@@ -61,27 +61,56 @@ class ModelTrainer:
 
             # Create a dictionary of hyper parameters
             # Create compatible parameter grid
+            # param_grid = [
+            #     {
+            #         'penalty': ['l2'],  # Use l2 explicitly
+            #         'solver': ['lbfgs'],
+            #         'C': [0.001, 0.01, 0.1, 1, 10],
+            #         'class_weight': [None, 'balanced']
+            #     },
+            #     {
+            #         'penalty': ['l1', 'l2'],
+            #         'solver': ['liblinear'],
+            #         'C': [0.001, 0.01, 0.1, 1, 10],
+            #         'class_weight': [None, 'balanced']
+            #     }
+            # ]
+
+            # # Create a GridSearchCV Model
+            # grid_search = GridSearchCV(
+            #     estimator=LogisticRegression(max_iter=1000),
+            #     param_grid=param_grid,
+            #     scoring=['accuracy', 'f1', 'roc_auc'],
+            #     refit='f1',
+            #     cv=5,
+            #     n_jobs=-1,
+            #     verbose=2,
+            #     error_score='raise'
+            # )
+
+            # Expanded parameter grid with more comprehensive options
             param_grid = [
                 {
-                    'penalty': ['l2'],  # Use l2 explicitly
+                    'penalty': ['l2'],
                     'solver': ['lbfgs'],
-                    'C': [0.001, 0.01, 0.1, 1, 10],
-                    'class_weight': [None, 'balanced']
+                    'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
+                    'class_weight': [None, 'balanced'],
+                    'max_iter': [500, 1000, 1500]
                 },
                 {
                     'penalty': ['l1', 'l2'],
                     'solver': ['liblinear'],
-                    'C': [0.001, 0.01, 0.1, 1, 10],
+                    'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100],
                     'class_weight': [None, 'balanced']
                 }
             ]
 
             # Create a GridSearchCV Model
             grid_search = GridSearchCV(
-                estimator=LogisticRegression(max_iter=1000),
+                estimator=LogisticRegression(),
                 param_grid=param_grid,
-                scoring=['accuracy', 'f1', 'roc_auc'],
-                refit='f1',
+                scoring=['accuracy', 'f1_weighted', 'roc_auc'],
+                refit='f1_weighted',  # Change refit metric
                 cv=5,
                 n_jobs=-1,
                 verbose=2,
