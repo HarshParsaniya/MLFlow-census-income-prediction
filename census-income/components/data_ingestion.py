@@ -47,17 +47,17 @@ class DataIngestion:
             df.drop(['Education','Marital Status', 'Relationship', 'Race', 'Gender'],axis=1,inplace=True)
 
             # Clean a Wrong Data
-            df['Workclass'] = df['Workclass'].str.strip()
-            df['Workclass'] = df['Workclass'].replace('?', np.nan)
+            if 'Workclass' in df.columns:
+                df['Workclass'] = df['Workclass'].str.strip().replace('?', np.nan)
 
-            df['Occupation'] = df['Occupation'].str.strip()
-            df['Occupation'] = df['Occupation'].replace('?', np.nan)
+            if 'Occupation' in df.columns:
+                df['Occupation'] = df['Occupation'].str.strip().replace('?', np.nan)
 
-            df['Native Country'] = df['Native Country'].str.strip()
-            df['Native Country'] = df['Native Country'].replace('?', np.nan)
+            if 'Native Country' in df.columns:
+                df['Native Country'] = df['Native Country'].str.strip().replace('?', np.nan)
 
-            df['Income'] = df['Income'].str.strip()
-            df['Income'] = df['Income'].replace({'<=50K' : 0, '>50K' : 1})
+            if 'Income' in df.columns:
+                df['Income'] = df['Income'].str.strip().replace({'<=50K': 0, '>50K': 1})
             
             # Create Train and Test dataset using train-test-split method
             train_dataset, test_dataset = train_test_split(df, test_size=0.3, random_state=42)
@@ -70,7 +70,7 @@ class DataIngestion:
 
             return(
                 self.ingestion_config.train_data_path,
-                self.ingestion_config.test_data_oath
+                self.ingestion_config.test_data_path
             )
 
         except Exception as e:

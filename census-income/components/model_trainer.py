@@ -61,7 +61,7 @@ class ModelTrainer:
 
             # Create a dictionary of hyper parameters
             param_grid = {
-                'penalty': ['l1', 'l2', 'elasticnet', 'none'],
+                'penalty': ['l1', 'l2', 'elasticnet'],
                 'C': [0.001, 0.01, 0.1, 1, 10],
                 'solver': ['lbfgs', 'liblinear', 'saga']
             }

@@ -33,6 +33,8 @@ class DataTransformation:
 
     def __init__(self) -> None:
         self.data_transformation_config = DataTransformationconfig()
+        # Select Target Column
+        self.target_column_name = 'Income'
 
     def get_data_transformation_obj(self):
         """
@@ -83,16 +85,13 @@ class DataTransformation:
             # Get the data transformation object
             data_transformation_obj = self.get_data_transformation_obj()
 
-            # Select Target Column
-            target_column_name = 'Income'
-
             # For Input Features remove the target column from train and test data
-            independent_feature_train_df = train_df.drop(target_column_name, axis=1)
-            independent_feature_test_df = test_df.drop(target_column_name, axis=1)
+            independent_feature_train_df = train_df.drop(self.target_column_name, axis=1)
+            independent_feature_test_df = test_df.drop(self.target_column_name, axis=1)
 
             # For Target Variable remove the another column from train and test data
-            target_feature_train_df = train_df[target_column_name]
-            target_feature_test_df = test_df[target_column_name]
+            target_feature_train_df = train_df[self.target_column_name]
+            target_feature_test_df = test_df[self.target_column_name]
 
             # Apply the data transformation to the train and test data
             input_train_df = data_transformation_obj.fit_transform(independent_feature_train_df)
