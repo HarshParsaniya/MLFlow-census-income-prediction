@@ -1,118 +1,105 @@
 import os
 import sys
-
 from dataclasses import dataclass
-
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder
-
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-
+import mlflow
 from census_income.exception.exception import CustomException
-
 from census_income.utils.utils import save_object
 
-
-
-
-# Intitialize the Data Transformation Configuration
 @dataclass
 class DataTransformationconfig:
-    # Create pickle file path for storing preprocessing data
     preprocessor_obj_file_path = os.path.join('artifacts', 'preprocessor.pkl')
 
-
-# create a class for Data Transformation
 class DataTransformation:
-    """
-    This class is used to store the configuration of the data transformation
-    """
-
-    def __init__(self) -> None:
+    def __init__(self):
         self.data_transformation_config = DataTransformationconfig()
-        # Select Target Column
         self.target_column_name = 'Income'
 
     def get_data_transformation_obj(self):
-        """
-        This method is used to get the data transformation object
-        """
-
         try:
-            # Define which columns should be ordinal-encoded and which should be scaled
             categorical_cols = ['Workclass', 'Occupation', 'Native Country']
             numerical_cols = ['Age', 'Final Weight', 'EducationNum', 'Capital Gain', 'capital loss', 'Hours per Week']
 
-            # create a Pipeline
-
-            # For numerical columns
-            numerical_pipeline = Pipeline(steps=[
+            numerical_pipeline = Pipeline([
                 ('imputer', SimpleImputer(strategy='mean')),
                 ('scaler', StandardScaler())
             ])
-
-            # For categorical columns
-            categorical_pipeline = Pipeline(steps=[
+            categorical_pipeline = Pipeline([
                 ('imputer', SimpleImputer(strategy='most_frequent')),
                 ('encoder', OrdinalEncoder())
             ])
 
-            # Preprocessing
-            preprocessor = ColumnTransformer(transformers=[
+            preprocessor = ColumnTransformer([
                 ('num', numerical_pipeline, numerical_cols),
                 ('cat', categorical_pipeline, categorical_cols)
             ])
 
+            # Log preprocessing steps in MLflow
+            mlflow.log_param("numerical_columns", numerical_cols)
+            mlflow.log_param("categorical_columns", categorical_cols)
+
             return preprocessor
-
-
+        
         except Exception as e:
             raise CustomException(e, sys)
 
     def initiate_data_transformation(self, train_path, test_path):
-        """
-        This method is used to initiate the data transformation
-        """
-
         try:
-            # Reading train and test data
-            train_df = pd.read_csv(train_path)
-            test_df = pd.read_csv(test_path)
+            with mlflow.start_run(run_name="Data Transformation"):
+                # Load train and test datasets
+                train_df = pd.read_csv(train_path)
+                test_df = pd.read_csv(test_path)
 
-            # Get the data transformation object
-            data_transformation_obj = self.get_data_transformation_obj()
+                mlflow.log_param("train_data_shape", train_df.shape)
+                mlflow.log_param("test_data_shape", test_df.shape)
 
-            # For Input Features remove the target column from train and test data
-            independent_feature_train_df = train_df.drop(self.target_column_name, axis=1)
-            independent_feature_test_df = test_df.drop(self.target_column_name, axis=1)
+                # Get preprocessor object
+                preprocessor = self.get_data_transformation_obj()
 
-            # For Target Variable remove the another column from train and test data
-            target_feature_train_df = train_df[self.target_column_name]
-            target_feature_test_df = test_df[self.target_column_name]
+                # Separate features and target
+                X_train, y_train = train_df.drop(self.target_column_name, axis=1), train_df[self.target_column_name]
+                X_test, y_test = test_df.drop(self.target_column_name, axis=1), test_df[self.target_column_name]
 
-            # Apply the data transformation to the train and test data
-            input_train_df = data_transformation_obj.fit_transform(independent_feature_train_df)
-            input_test_df = data_transformation_obj.transform(independent_feature_test_df)
+                # Log target distribution
+                mlflow.log_metric("train_target_0", (y_train == 0).sum())
+                mlflow.log_metric("train_target_1", (y_train == 1).sum())
+                mlflow.log_metric("test_target_0", (y_test == 0).sum())
+                mlflow.log_metric("test_target_1", (y_test == 1).sum())
 
-            # Final train and test data
-            train_data = np.c_[input_train_df, np.array(target_feature_train_df)]
-            test_data = np.c_[input_test_df, np.array(target_feature_test_df)]
+                # Transform features
+                X_train_transformed = preprocessor.fit_transform(X_train)
+                X_test_transformed = preprocessor.transform(X_test)
 
-            # Data store in pickle file
-            save_object(
-                file_path = self.data_transformation_config.preprocessor_obj_file_path,
-                obj = data_transformation_obj
-            )
+                # Combine transformed features with target
+                train_data = np.c_[X_train_transformed, y_train]
+                test_data = np.c_[X_test_transformed, y_test]
 
-            return(
-                train_data,
-                test_data,
-                self.data_transformation_config.preprocessor_obj_file_path
-            )
+                # Save the preprocessor object
+                save_object(self.data_transformation_config.preprocessor_obj_file_path, preprocessor)
+                mlflow.log_artifact(self.data_transformation_config.preprocessor_obj_file_path, artifact_path="preprocessors")
 
+                # Log transformation results
+                mlflow.log_param("transformed_train_shape", train_data.shape)
+                mlflow.log_param("transformed_test_shape", test_data.shape)
+
+                # Indicate successful transformation
+                mlflow.log_metric("transformation_status", 1)
+
+                return train_data, test_data, self.data_transformation_config.preprocessor_obj_file_path
             
         except Exception as e:
+            # Log failure and error details in MLflow
+            mlflow.log_metric("transformation_status", 0)
+            error_message = str(e)
+
+            with open("transformation_error.log", "w") as error_file:
+                error_file.write(error_message)
+
+            mlflow.log_artifact("transformation_error.log", artifact_path="errors")
+            
             raise CustomException(e, sys)

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/harsh/Desktop/AIML%20Project/Census%20Income%20Logistic%20Regression%20MLFlow/mlruns/0/f9fb82728a1b48de9cd5b09657b4b632/artifacts
+end_time: 1737892007923
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f9fb82728a1b48de9cd5b09657b4b632
+run_name: Data Ingestion
+run_uuid: f9fb82728a1b48de9cd5b09657b4b632
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1737892007664
+status: 3
+tags: []
+user_id: harsh

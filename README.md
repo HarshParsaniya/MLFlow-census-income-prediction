@@ -13,3 +13,8 @@ python -m venv venv
 ```
 pip install -r requirements.txt
 ```
+
+## MLflow command for UI
+```
+mlflow ui
+```

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/harsh/Desktop/AIML%20Project/Census%20Income%20Logistic%20Regression%20MLFlow/mlruns/0/3cc4a19e5ac34393a1aa9913b459779a/artifacts
+end_time: 1737892008115
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3cc4a19e5ac34393a1aa9913b459779a
+run_name: Data Transformation
+run_uuid: 3cc4a19e5ac34393a1aa9913b459779a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1737892007927
+status: 3
+tags: []
+user_id: harsh

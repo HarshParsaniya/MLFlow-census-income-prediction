@@ -1,77 +1,53 @@
 import os
 import sys
-
 from dataclasses import dataclass
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
 from census_income.exception.exception import CustomException
+import mlflow
 
-# Intitialize the Data Ingetion Configuration
 @dataclass
 class DataIngestionconfig:
-    # Create raw dataset path
     raw_data_path = os.path.join('artifacts', 'raw.csv')
-    # Create train dataset path
     train_data_path = os.path.join('artifacts', 'train.csv')
-    # Create test dataset path
     test_data_path = os.path.join('artifacts', 'test.csv')
 
-
-# create a class for Data Ingestion
 class DataIngestion:
-    """
-    This class is used to store the configuration of the data ingestion
-    """
-
-    def __init__(self) -> None:
+    def __init__(self):
         self.ingestion_config = DataIngestionconfig()
 
     def initiate_data_ingestion(self):
-        """
-        This method is used to create raw, train, and test dataset
-        """
-        
         try:
-            # Read the Data from Original Dataset
-            df = pd.read_csv(os.path.join('notebook/data/census-income', 'adult.csv'))
+            with mlflow.start_run(run_name="Data Ingestion"):
+                # Load and save the raw dataset
+                df = pd.read_csv(os.path.join('notebook/data/census-income', 'adult.csv'))
+                mlflow.log_param("raw_dataset_shape", df.shape)
+                os.makedirs(os.path.dirname(self.ingestion_config.raw_data_path), exist_ok=True)
+                df.to_csv(self.ingestion_config.raw_data_path, index=False)
+                mlflow.log_artifact(self.ingestion_config.raw_data_path, artifact_path="datasets/raw")
 
-            # Create an artifacts folder
-            os.makedirs(os.path.dirname(self.ingestion_config.raw_data_path), exist_ok=True)
-            # Create raw dataset at artifacts folder
-            df.to_csv(self.ingestion_config.raw_data_path, index=False)
-
-            # Drop an Unnecessary(Noisy) Data
-            df.drop(['Education','Marital Status', 'Relationship', 'Race', 'Gender'],axis=1,inplace=True)
-
-            # Clean a Wrong Data
-            if 'Workclass' in df.columns:
-                df['Workclass'] = df['Workclass'].str.strip().replace('?', np.nan)
-
-            if 'Occupation' in df.columns:
-                df['Occupation'] = df['Occupation'].str.strip().replace('?', np.nan)
-
-            if 'Native Country' in df.columns:
-                df['Native Country'] = df['Native Country'].str.strip().replace('?', np.nan)
-
-            if 'Income' in df.columns:
+                # Preprocess the dataset
+                df.drop(['Education', 'Marital Status', 'Relationship', 'Race', 'Gender'], axis=1, inplace=True)
+                df.replace({'?': np.nan}, inplace=True)
                 df['Income'] = df['Income'].str.strip().replace({'<=50K': 0, '>50K': 1}).astype(int)
-            
-            # Create Train and Test dataset using train-test-split method
-            train_dataset, test_dataset = train_test_split(df, test_size=0.3, random_state=42)
+                mlflow.log_param("processed_columns", list(df.columns))
+                mlflow.log_metric("missing_values_count", df.isnull().sum().sum())
 
-            # Create Train dataset at artifacts folder
-            train_dataset.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
+                # Split into train and test datasets
+                train_dataset, test_dataset = train_test_split(df, test_size=0.3, random_state=42)
+                mlflow.log_param("train_dataset_shape", train_dataset.shape)
+                mlflow.log_param("test_dataset_shape", test_dataset.shape)
 
-            # Create Test dataset at artifacts folder
-            test_dataset.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
+                # Save train and test datasets
+                train_dataset.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
+                test_dataset.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
+                mlflow.log_artifact(self.ingestion_config.train_data_path, artifact_path="datasets/train")
+                mlflow.log_artifact(self.ingestion_config.test_data_path, artifact_path="datasets/test")
+                mlflow.log_metric("ingestion_status", 1)
 
-            return(
-                self.ingestion_config.train_data_path,
-                self.ingestion_config.test_data_path
-            )
+                return self.ingestion_config.train_data_path, self.ingestion_config.test_data_path
 
         except Exception as e:
+            mlflow.log_metric("ingestion_status", 0)
             raise CustomException(e, sys)
